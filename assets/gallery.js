@@ -96,7 +96,7 @@ var data={
   jewellery:['assets/posters/01-jewellery.jpg','assets/images/01.jpg','assets/images/02.jpg','assets/images/03.jpg','assets/images/04.jpg','assets/images/05.jpg'],
   handbags:['assets/posters/02-handbags.jpg','assets/images/32.jpg','assets/images/40.jpg','assets/images/47.jpg','assets/images/48.jpg','assets/images/49.jpg'],
   handmade:['assets/posters/04-handmade.jpg','assets/images/41.jpg','assets/images/42.jpg','assets/images/43.jpg','assets/images/44.jpg','assets/images/45.jpg'],
-  fragrance:['assets/posters/03-fragrance.jpg','assets/images/46.jpg','assets/images/47.jpg','assets/images/48.jpg','assets/images/49.jpg','assets/images/50.jpg']
+  fragrance:['assets/posters/03-fragrance.jpg','assets/images/46.jpg','assets/images/50.jpg','assets/images/51.jpg']
 };
 var names={jewellery:'Jewellery',handbags:'Handbags',handmade:'Handmade & Home',fragrance:'Perfume & Fragrance'};
 var i=0,key='jewellery',timer=null,paused=false;
