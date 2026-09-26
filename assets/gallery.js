@@ -25,6 +25,7 @@ function injectStyles(){
     '.category-gallery.category-modal-host .category-stage button{border-radius:50%;font-size:1.5rem}',
     '.category-modal-close{position:absolute;top:12px;right:12px;width:38px;height:38px;border:1px solid var(--line);border-radius:50%;background:var(--cream);color:var(--ink);font-size:1.4rem;line-height:1;cursor:pointer;z-index:3}',
     '.category-modal-close:hover,.category-modal-close:focus-visible{background:var(--ink);color:#fff;outline:none}',
+    '.category-tab[data-category="candles"]{display:none!important}',
     '@media(max-width:700px){.real-story-slider{grid-template-columns:36px minmax(0,1fr) 36px;gap:7px}.real-story-frame{aspect-ratio:4/3}.real-story-control{width:36px;height:36px;font-size:1.3rem}.category-gallery.category-modal-host{padding:10px}.category-gallery.category-modal-host .category-modal-panel{max-height:calc(100vh - 20px);padding:15px}.category-gallery.category-modal-host .category-stage{grid-template-columns:36px minmax(0,1fr) 36px;gap:6px}.category-gallery.category-modal-host .category-frame{aspect-ratio:4/5;max-height:62vh}}',
     '@media(prefers-reduced-motion:reduce){.real-story-control{transition:none}}'
   ].join('');
@@ -101,7 +102,6 @@ if(imageWall){
   reset();
 }
 
-/* Collections open as a focused category view instead of creating another permanent gallery block. */
 if(!root)return;
 
 var panel=document.createElement('div');
@@ -120,17 +120,15 @@ panel.appendChild(close);
 var data={
   jewellery:['assets/posters/01-jewellery.jpg','assets/images/01.jpg','assets/images/02.jpg','assets/images/03.jpg','assets/images/04.jpg','assets/images/05.jpg'],
   handbags:['assets/posters/02-handbags.jpg','assets/images/32.jpg','assets/images/40.jpg','assets/images/47.jpg','assets/images/48.jpg','assets/images/49.jpg'],
-  candles:['assets/posters/04-handmade.jpg','assets/posters/03-fragrance.jpg','assets/images/50.jpg','assets/images/51.jpg','assets/images/45.jpg','assets/images/46.jpg'],
   handmade:['assets/posters/04-handmade.jpg','assets/images/41.jpg','assets/images/42.jpg','assets/images/43.jpg','assets/images/44.jpg','assets/images/45.jpg'],
   fragrance:['assets/posters/03-fragrance.jpg','assets/images/46.jpg','assets/images/47.jpg','assets/images/48.jpg','assets/images/49.jpg','assets/images/50.jpg']
 };
-var names={jewellery:'Jewellery',handbags:'Handbags',candles:'Candles',handmade:'Handmade & Home',fragrance:'Perfume & Fragrance'};
+var names={jewellery:'Jewellery',handbags:'Handbags',handmade:'Handmade & Home',fragrance:'Perfume & Fragrance'};
 var index=0,key='jewellery',timer=null,paused=false;
 var img=root.querySelector('[data-gallery-image]');
 var title=root.querySelector('[data-gallery-title]');
 var count=root.querySelector('[data-gallery-count]');
 if(count)count.remove();
-
 var buttons=[].slice.call(root.querySelectorAll('[data-category]'));
 function render(){
   var list=data[key]||[];
@@ -197,7 +195,7 @@ document.querySelectorAll('.collection').forEach(function(card){
   });
 });
 
-var pillMap={Jewellery:'jewellery',Handbags:'handbags',Perfume:'fragrance',Handmade:'handmade',Candles:'candles'};
+var pillMap={Jewellery:'jewellery',Handbags:'handbags',Perfume:'fragrance',Handmade:'handmade',Candles:'handmade'};
 document.querySelectorAll('.pill').forEach(function(pill){
   var category=pillMap[pill.textContent.trim()];
   if(!category)return;
