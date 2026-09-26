@@ -10,8 +10,8 @@ function addStyles(){
   s.id='calista-gallery-polish';
   s.textContent=''+
   '.real-story-slider{display:grid!important;grid-template-columns:clamp(40px,5vw,58px) minmax(0,1fr) clamp(40px,5vw,58px);align-items:center;gap:16px;columns:auto!important;margin-top:34px}'+
-  '.real-story-frame{min-width:0;aspect-ratio:16/9;max-height:72vh;overflow:hidden;display:grid;place-items:center;background:#202820;border:1px solid var(--line);box-shadow:0 18px 50px rgba(37,45,39,.12)}'+
-  '.real-story-image{width:100%;height:100%;object-fit:contain!important;background:#202820}'+
+  '.real-story-frame{min-width:0;aspect-ratio:16/9;max-height:72vh;overflow:hidden;display:grid;place-items:center;background:var(--cream);border:2px solid var(--line);box-shadow:0 18px 50px rgba(37,45,39,.12);padding:0}'+
+  '.real-story-image{display:block;width:auto!important;height:auto!important;max-width:100%;max-height:100%;object-fit:contain!important;background:transparent}'+
   '.real-story-control{width:clamp(40px,5vw,58px);height:clamp(40px,5vw,58px);display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--cream);color:var(--ink);font:inherit;font-size:1.7rem;line-height:1;cursor:pointer;transition:transform .25s ease,background .25s ease,color .25s ease,box-shadow .25s ease}'+
   '.real-story-control:hover,.real-story-control:focus-visible{background:var(--ink);color:#fff;transform:translateY(-1px);box-shadow:0 10px 24px rgba(31,41,34,.16);outline:none}'+
   '.real-story-lightbox{position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:5vw;background:rgba(20,26,22,.92);cursor:zoom-out}'+
@@ -20,8 +20,8 @@ function addStyles(){
   '.category-gallery.category-modal-host.is-open{display:grid;place-items:center}'+
   '.category-gallery.category-modal-host .category-modal-panel{width:min(1100px,100%);max-height:calc(100vh - 28px);overflow:auto;padding:clamp(16px,3vw,30px);border:1px solid rgba(255,255,255,.18);background:var(--cream);box-shadow:0 30px 90px rgba(0,0,0,.3);position:relative}'+
   '.category-gallery.category-modal-host .category-stage{grid-template-columns:52px minmax(0,1fr) 52px;gap:14px}'+
-  '.category-gallery.category-modal-host .category-frame{aspect-ratio:16/10;max-height:68vh;background:#eee}'+
-  '.category-gallery.category-modal-host .category-frame img{object-fit:contain!important}'+
+  '.category-gallery.category-modal-host .category-frame{aspect-ratio:16/10;max-height:68vh;background:var(--cream);border:2px solid var(--line);display:grid;place-items:center;overflow:hidden}'+
+  '.category-gallery.category-modal-host .category-frame img{width:auto!important;height:auto!important;max-width:100%;max-height:100%;object-fit:contain!important}'+
   '.category-gallery.category-modal-host .category-stage button{border-radius:50%;font-size:1.5rem}'+
   '.category-modal-close{position:absolute;top:12px;right:12px;width:38px;height:38px;border:1px solid var(--line);border-radius:50%;background:var(--cream);color:var(--ink);font-size:1.4rem;line-height:1;cursor:pointer;z-index:3}'+
   '.category-modal-close:hover,.category-modal-close:focus-visible{background:var(--ink);color:#fff;outline:none}'+
@@ -30,7 +30,7 @@ function addStyles(){
   '.footer .social a{padding:9px 0;border-bottom:1px solid rgba(238,230,214,.35);transition:opacity .2s ease,border-color .2s ease}'+
   '.footer .social a:hover,.footer .social a:focus-visible{opacity:.7;border-color:currentColor;outline:none}'+
   '.collection[role="button"]:focus-visible,.pill[role="button"]:focus-visible{outline:2px solid var(--gold);outline-offset:4px}'+
-  '@media(max-width:700px){.real-story-slider{grid-template-columns:36px minmax(0,1fr) 36px;gap:7px}.real-story-frame{aspect-ratio:4/3}.real-story-control{width:36px;height:36px;font-size:1.3rem}.category-gallery.category-modal-host{padding:10px}.category-gallery.category-modal-host .category-modal-panel{max-height:calc(100vh - 20px);padding:15px}.category-gallery.category-modal-host .category-stage{grid-template-columns:36px minmax(0,1fr) 36px;gap:6px}.category-gallery.category-modal-host .category-frame{aspect-ratio:4/5;max-height:62vh}}'+
+  '@media(max-width:700px){.real-story-slider{grid-template-columns:36px minmax(0,1fr) 36px;gap:7px}.real-story-frame{aspect-ratio:4/3;max-height:62vh}.real-story-control{width:36px;height:36px;font-size:1.3rem}.category-gallery.category-modal-host{padding:10px}.category-gallery.category-modal-host .category-modal-panel{max-height:calc(100vh - 20px);padding:15px}.category-gallery.category-modal-host .category-stage{grid-template-columns:36px minmax(0,1fr) 36px;gap:6px}.category-gallery.category-modal-host .category-frame{aspect-ratio:4/5;max-height:62vh}}'+
   '@media(prefers-reduced-motion:reduce){.real-story-control{transition:none}}';
   document.head.appendChild(s);
 }
@@ -67,7 +67,7 @@ function setupStory(){
   frame.appendChild(img); imageWall.appendChild(prev); imageWall.appendChild(frame); imageWall.appendChild(next);
   var i=0,timer=null,paused=false;
   function render(){i=(i+sources.length)%sources.length;img.src=sources[i].src;img.alt=sources[i].alt;}
-  function reset(){clearInterval(timer);if(!paused&&sources.length>1)timer=setInterval(function(){i++;render();},9000);}
+  function reset(){clearInterval(timer);if(!paused&&sources.length>1)timer=setInterval(function(){i++;render();},5000);}
   function go(n){i+=n;render();reset();}
   prev.addEventListener('click',function(){go(-1);}); next.addEventListener('click',function(){go(1);});
   img.addEventListener('click',function(){lightbox(img);});
@@ -113,7 +113,7 @@ function render(){
   title.textContent=names[key];
   buttons.forEach(function(b){b.setAttribute('aria-selected',b.getAttribute('data-category')===key?'true':'false');});
 }
-function reset(){clearInterval(timer);if(!paused&&root.classList.contains('is-open'))timer=setInterval(next,9000);}
+function reset(){clearInterval(timer);if(!paused&&root.classList.contains('is-open'))timer=setInterval(next,5000);}
 function next(){i++;render();reset();}
 function prev(){i--;render();reset();}
 function openCategory(category){if(!data[category])return;key=category;i=0;render();root.classList.add('is-open');document.body.style.overflow='hidden';close.focus();reset();}
