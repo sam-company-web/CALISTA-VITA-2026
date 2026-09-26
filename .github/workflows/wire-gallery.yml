@@ -9,24 +9,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Wire gallery safely
+      - name: Apply focused premium cleanup
         shell: python
         run: |
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          if 'assets/gallery.js' in s: raise SystemExit(0)
-          css='''\n.category-gallery{margin-top:38px;padding:26px;border:1px solid var(--line);background:rgba(255,255,255,.3);overflow:hidden}.category-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}.category-tab{appearance:none;border:1px solid var(--line);background:transparent;color:var(--ink);padding:10px 13px;font:inherit;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}.category-tab[aria-selected="true"],.category-tab:hover{background:var(--ink);color:#fff}.category-stage{position:relative;display:grid;grid-template-columns:46px minmax(0,1fr) 46px;gap:10px;align-items:center}.category-stage button{width:46px;height:46px;border:1px solid var(--line);background:var(--cream);color:var(--ink);cursor:pointer;font-size:1.2rem}.category-frame{min-width:0;overflow:hidden;background:#ddd;aspect-ratio:16/10}.category-frame img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;transition:opacity .25s ease,transform .5s ease}.category-meta{display:flex;justify-content:space-between;gap:16px;margin-top:11px;font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;color:var(--olive)}\n@media(max-width:560px){.category-gallery{margin-top:26px;padding:15px}.category-stage{grid-template-columns:36px minmax(0,1fr) 36px;gap:6px}.category-stage button{width:36px;height:36px}.category-frame{aspect-ratio:4/5}.category-meta{font-size:.58rem}.hero h1{font-size:clamp(3.4rem,16vw,4.4rem)}}\n'''
-          s=s.replace('</style>',css+'</style>',1)
-          gallery='''<div class="category-gallery" id="category-gallery" data-category-gallery aria-label="CALISTA VITA category gallery"><div class="category-tabs" role="tablist" aria-label="Collections"><button class="category-tab" type="button" data-category="jewellery" aria-selected="true">Jewellery</button><button class="category-tab" type="button" data-category="handbags" aria-selected="false">Handbags</button><button class="category-tab" type="button" data-category="candles" aria-selected="false">Candles</button><button class="category-tab" type="button" data-category="handmade" aria-selected="false">Handmade &amp; Home</button><button class="category-tab" type="button" data-category="fragrance" aria-selected="false">Perfume &amp; Fragrance</button></div><div class="category-stage"><button type="button" data-prev aria-label="Previous image">‹</button><div class="category-frame"><img data-gallery-image src="assets/posters/01-jewellery.jpg" alt="CALISTA VITA Jewellery image 1"></div><button type="button" data-next aria-label="Next image">›</button></div><div class="category-meta"><span data-gallery-title>Jewellery</span><span data-gallery-count>1 / 6</span></div></div>'''
-          marker='</div></section>\n<section class="manifesto">'
-          if marker not in s: raise SystemExit('collections marker missing')
-          s=s.replace(marker,'</div>'+gallery+'</section>\n<section class="manifesto">',1)
-          s=s.replace('</body>','<script src="assets/gallery.js" defer></script>\n</body>',1)
+          if 'calista-premium-fix' in s:
+              raise SystemExit(0)
+          css='''
+<style id="calista-premium-fix">
+.category-gallery:not(.category-modal-host){display:none!important;margin:0!important;padding:0!important;border:0!important}
+.collection-grid{align-items:stretch}
+.collection{min-width:0}
+.poster-grid{align-items:start}
+.image-grid.real-story-slider{columns:auto!important}
+.footer{align-items:flex-start}
+.social{flex-wrap:wrap;align-items:center}
+.social a{display:inline-flex;align-items:center;min-height:32px;white-space:nowrap}
+.film-caption{align-items:flex-start}
+@media(max-width:900px){.collection-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.collection{min-height:460px}.editorial{min-height:0}.editorial-media{min-height:420px}.story{gap:45px}.footer{gap:22px}}
+@media(max-width:560px){.section{padding-left:6vw;padding-right:6vw}.collection-grid,.poster-grid{grid-template-columns:1fr}.collection{min-height:430px}.editorial-media{min-height:360px}.film-caption{gap:8px}.social{gap:12px}.social a{font-size:.62rem}}
+</style>
+'''
+          if '</head>' not in s:
+              raise SystemExit('head marker missing')
+          s=s.replace('</head>',css+'</head>',1)
           p.write_text(s,encoding='utf-8')
       - name: Commit
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add index.html
-          git diff --cached --quiet || (git commit -m "Wire category gallery into site" && git push)
+          git diff --cached --quiet || (git commit -m "Polish CALISTA VITA layout and responsive spacing" && git push)
