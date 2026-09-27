@@ -1,0 +1,56 @@
+name: Verify CALISTA VITA viewer result
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  browser-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run local site and verify viewer result
+        shell: bash
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/calista-server.log 2>&1 &
+          SERVER_PID=$!
+          trap "kill $SERVER_PID" EXIT
+          sleep 2
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({headless:true});
+            const page = await browser.newPage({viewport:{width:1536,height:1024}, deviceScaleFactor:1});
+            const failed=[];
+            page.on('console', m => { if (m.type()==='error') failed.push('console:'+m.text()); });
+            page.on('pageerror', e => failed.push('pageerror:'+e.message));
+            const responses=[];
+            page.on('response', r => responses.push({url:r.url(),status:r.status()}));
+            await page.goto('http://127.0.0.1:4173/', {waitUntil:'networkidle'});
+            const hero = page.locator('.hero-media img').first();
+            await hero.waitFor();
+            const info = await hero.evaluate(img => ({complete:img.complete,naturalWidth:img.naturalWidth,naturalHeight:img.naturalHeight,src:img.currentSrc||img.src,rect:img.getBoundingClientRect().toJSON()}));
+            await page.screenshot({path:'viewer-desktop.png',fullPage:false});
+            if (!info.complete || info.naturalWidth===0) throw new Error('HERO_IMAGE_NOT_VISIBLE '+JSON.stringify(info));
+            if (info.rect.width < 500 || info.rect.height < 300) throw new Error('HERO_IMAGE_NOT_MAIN_VISUAL '+JSON.stringify(info.rect));
+            const bad = responses.filter(x => x.status>=400);
+            if (bad.length) throw new Error('HTTP_ERRORS '+JSON.stringify(bad.slice(0,20)));
+            if (failed.length) throw new Error('BROWSER_ERRORS '+JSON.stringify(failed));
+            const links = await page.locator('a.hit').evaluateAll(as => as.map(a => ({text:a.textContent.trim(),href:a.getAttribute('href'),box:a.getBoundingClientRect().toJSON()})));
+            console.log('VIEWER_RESULT', JSON.stringify({hero:info,links}));
+            await browser.close();
+          })().catch(e => { console.error(e); process.exit(1); });
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calista-viewer-desktop
+          path: viewer-desktop.png
