@@ -30,7 +30,12 @@ function addStyles(){
   '.footer .social a{padding:9px 0;border-bottom:1px solid rgba(238,230,214,.35);transition:opacity .2s ease,border-color .2s ease}'+
   '.footer .social a:hover,.footer .social a:focus-visible{opacity:.7;border-color:currentColor;outline:none}'+
   '.collection[role="button"]:focus-visible,.pill[role="button"]:focus-visible{outline:2px solid var(--gold);outline-offset:4px}'+
-  '@media(max-width:700px){.real-story-slider{width:100%;grid-template-columns:32px minmax(0,1fr) 32px;gap:6px;margin-left:auto;margin-right:auto;padding:0}.real-story-frame{width:100%;max-width:100%;margin:0 auto}.real-story-image{max-width:100%!important;max-height:62vh!important}.real-story-control{width:32px;height:32px;font-size:1.2rem}.category-gallery.category-modal-host{padding:10px}.category-gallery.category-modal-host .category-modal-panel{max-height:calc(100vh - 20px);padding:15px}.category-gallery.category-modal-host .category-stage{grid-template-columns:32px minmax(0,1fr) 32px;gap:6px}.category-gallery.category-modal-host .category-frame{width:100%;margin:0 auto}.category-gallery.category-modal-host .category-frame img{max-width:100%!important;max-height:62vh!important}}'+
+  '.calista-logo-image{display:block;width:min(100%,300px);height:auto;max-height:92px;object-fit:contain;object-position:left center;border:0;box-shadow:none;background:transparent}'+
+  '.hero-signature .calista-logo-image{width:min(100%,360px);max-height:120px;object-position:left center;mix-blend-mode:screen;filter:drop-shadow(0 8px 24px rgba(0,0,0,.28));border-radius:0}'+
+  '.intro-brand-lockup{display:block;width:min(100%,520px);margin:0 auto 30px;max-height:230px;object-fit:contain;object-position:center;border:1px solid rgba(38,48,42,.12);background:var(--cream);box-shadow:0 20px 50px rgba(37,45,39,.10)}'+
+  '.intro-brand-lockup-wrap{grid-column:1/-1;display:flex;justify-content:center;margin-bottom:4px}'+
+  '.intro .intro-heading-wrap{display:flex;flex-direction:column;align-items:flex-start}'+
+  '@media(max-width:700px){.real-story-slider{width:100%;grid-template-columns:32px minmax(0,1fr) 32px;gap:6px;margin-left:auto;margin-right:auto;padding:0}.real-story-frame{width:100%;max-width:100%;margin:0 auto}.real-story-image{max-width:100%!important;max-height:62vh!important}.real-story-control{width:32px;height:32px;font-size:1.2rem}.category-gallery.category-modal-host{padding:10px}.category-gallery.category-modal-host .category-modal-panel{max-height:calc(100vh - 20px);padding:15px}.category-gallery.category-modal-host .category-stage{grid-template-columns:32px minmax(0,1fr) 32px;gap:6px}.category-gallery.category-modal-host .category-frame{width:100%;margin:0 auto}.category-gallery.category-modal-host .category-frame img{max-width:100%!important;max-height:62vh!important}.calista-logo-image{width:min(100%,250px);max-height:76px}.hero-signature .calista-logo-image{width:min(100%,300px);max-height:100px}.intro-brand-lockup{width:min(100%,430px);max-height:190px;margin-bottom:24px}}'+
   '@media(prefers-reduced-motion:reduce){.real-story-control{transition:none}}';
   document.head.appendChild(s);
 }
@@ -85,6 +90,44 @@ function setupStory(){
   render(); reset();
 }
 setupStory();
+
+function setupBranding(){
+  var logoSrc='assets/images/calista-vita-logo.jpg';
+  var lockupSrc='assets/images/calista-vita-brand-lockup.jpg';
+  var heroSignature=document.querySelector('.hero-signature');
+  if(heroSignature && !heroSignature.querySelector('.calista-logo-image')){
+    var logo=document.createElement('img');
+    logo.className='calista-logo-image';
+    logo.src=logoSrc;
+    logo.alt='CALISTA VITA — Nature’s Elegance';
+    logo.loading='eager';
+    logo.decoding='async';
+    heroSignature.insertBefore(logo,heroSignature.firstChild);
+    var monogram=heroSignature.querySelector('.hero-monogram');
+    var name=heroSignature.querySelector('.hero-signature-name');
+    var tag=heroSignature.querySelector('.hero-signature-tag');
+    if(monogram) monogram.style.display='none';
+    if(name) name.style.display='none';
+    if(tag) tag.style.display='none';
+  }
+  var intro=document.querySelector('#world.intro');
+  if(intro && !intro.querySelector('.intro-brand-lockup-wrap')){
+    var left=intro.querySelector(':scope > div:first-child');
+    if(left){
+      var wrap=document.createElement('div');
+      wrap.className='intro-brand-lockup-wrap';
+      var lock=document.createElement('img');
+      lock.className='intro-brand-lockup';
+      lock.src=lockupSrc;
+      lock.alt='CALISTA VITA — Nature’s Elegance — Jewellery, Handbags, Candles, Perfume';
+      lock.loading='eager';
+      lock.decoding='async';
+      wrap.appendChild(lock);
+      intro.insertBefore(wrap,intro.firstChild);
+    }
+  }
+}
+setupBranding();
 
 if(!root) return;
 
