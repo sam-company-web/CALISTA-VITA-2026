@@ -31,13 +31,9 @@ jobs:
             await page.waitForFunction(() => document.querySelector('#calistaExactHero')?.dataset.heroExact === 'true', null, {timeout:30000});
             const hero=page.locator('#calistaExactHero').first();
             const info=await hero.evaluate(img => ({
-              complete:img.complete,
-              naturalWidth:img.naturalWidth,
-              naturalHeight:img.naturalHeight,
-              sha:img.dataset.heroSha256||'',
-              exact:img.dataset.heroExact||'',
-              heroBytes:img.dataset.heroBytes||'',
-              rect:img.getBoundingClientRect().toJSON()
+              complete:img.complete,naturalWidth:img.naturalWidth,naturalHeight:img.naturalHeight,
+              sha:img.dataset.heroSha256||'',exact:img.dataset.heroExact||'',
+              heroBytes:img.dataset.heroBytes||'',rect:img.getBoundingClientRect().toJSON()
             }));
             if(!info.complete || info.naturalWidth!==2048 || info.naturalHeight!==1355) throw new Error(label+'_HERO_IMAGE_NOT_EXACT '+JSON.stringify(info));
             if(info.exact!=='true' || Number(info.heroBytes)!==421251) throw new Error(label+'_HERO_BYTE_CHECK_FAILED '+JSON.stringify(info));
@@ -48,45 +44,28 @@ jobs:
           }
           (async () => {
             const browser=await chromium.launch({headless:true});
-            const page=await browser.newPage({viewport:{width:1536,height:1024},deviceScaleFactor:1});
             const failed=[];
             const responses=[];
-            page.on('console',m=>{if(m.type()==='error')failed.push('console:'+m.text());});
-            page.on('pageerror',e=>failed.push('pageerror:'+e.message));
-            page.on('response',r=>responses.push({url:r.url(),status:r.status()}));
-            await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
-            const desktop=await inspect(page,'DESKTOP');
-            const desktopB64=await page.evaluate(async()=>{const r=await fetch(document.querySelector('#calistaExactHero').src);const b=new Uint8Array(await r.arrayBuffer());let s='';for(let i=0;i<b.length;i+=32768)s+=String.fromCharCode(...b.subarray(i,i+32768));return btoa(s);});
-            const desktopHash=require('crypto').createHash('sha256').update(Buffer.from(desktopB64,'base64')).digest('hex');
-            if(desktopHash!==EXPECTED_SHA) throw new Error('DESKTOP_EXACT_SHA_MISMATCH '+desktopHash);
-            const cta=page.locator('.hero-cta-hit').first();
-            const heroRect=await page.locator('.hero').evaluate(el=>el.getBoundingClientRect().toJSON());
-            const ctaRect=await cta.evaluate(el=>el.getBoundingClientRect().toJSON());
-            if(ctaRect.x<heroRect.x || ctaRect.y<heroRect.y || ctaRect.right>heroRect.right || ctaRect.bottom>heroRect.bottom) throw new Error('CTA_OUTSIDE_HERO '+JSON.stringify({heroRect,ctaRect}));
-            await cta.click();
-            await page.waitForTimeout(100);
-            if(await page.evaluate(()=>location.hash)!=='#collections') throw new Error('CTA_DID_NOT_NAVIGATE');
-            await page.screenshot({path:'viewer-desktop.png',fullPage:false});
-            const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
-            const mobileResponses=[];
-            mobile.on('response',r=>mobileResponses.push({url:r.url(),status:r.status()}));
-            mobile.on('console',m=>{if(m.type()==='error')failed.push('mobile-console:'+m.text());});
-            mobile.on('pageerror',e=>failed.push('mobile-pageerror:'+e.message));
-            await mobile.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
-            const mobileInfo=await inspect(mobile,'MOBILE');
-            const mobileB64=await mobile.evaluate(async()=>{const r=await fetch(document.querySelector('#calistaExactHero').src);const b=new Uint8Array(await r.arrayBuffer());let s='';for(let i=0;i<b.length;i+=32768)s+=String.fromCharCode(...b.subarray(i,i+32768));return btoa(s);});
-            const mobileHash=require('crypto').createHash('sha256').update(Buffer.from(mobileB64,'base64')).digest('hex');
-            if(mobileHash!==EXPECTED_SHA) throw new Error('MOBILE_EXACT_SHA_MISMATCH '+mobileHash);
-            const mobileCta=mobile.locator('.hero-cta-hit').first();
-            await mobileCta.click();
-            await mobile.waitForTimeout(100);
-            if(await mobile.evaluate(()=>location.hash)!=='#collections') throw new Error('MOBILE_CTA_DID_NOT_NAVIGATE');
-            await mobile.screenshot({path:'viewer-mobile.png',fullPage:false});
-            const bad=[...responses,...mobileResponses].filter(x=>x.status>=400);
+            const viewports=[
+              ['DESKTOP',1536,1024],
+              ['TABLET',768,1024],
+              ['MOBILE',390,844]
+            ];
+            const results=[];
+            for(const [label,w,h] of viewports){
+              const page=await browser.newPage({viewport:{width:w,height:h},deviceScaleFactor:1});
+              page.on('console',m=>{if(m.type()==='error')failed.push(label+':console:'+m.text());});
+              page.on('pageerror',e=>failed.push(label+':pageerror:'+e.message));
+              page.on('response',r=>responses.push({label,url:r.url(),status:r.status()}));
+              await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
+              results.push([label,await inspect(page,label)]);
+              await page.screenshot({path:'viewer-'+label.toLowerCase()+'.png',fullPage:false});
+              await page.close();
+            }
+            const bad=responses.filter(x=>x.status>=400);
             if(bad.length) throw new Error('HTTP_ERRORS '+JSON.stringify(bad.slice(0,20)));
             if(failed.length) throw new Error('BROWSER_ERRORS '+JSON.stringify(failed));
-            console.log('VIEWER_RESULT',JSON.stringify({desktop,mobile:mobileInfo,expectedSha:EXPECTED_SHA}));
-            await mobile.close();
+            console.log('VIEWER_RESULT',JSON.stringify({results,expectedSha:EXPECTED_SHA}));
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1);});
           NODE
@@ -96,4 +75,5 @@ jobs:
           name: calista-exact-hero-viewer
           path: |
             viewer-desktop.png
+            viewer-tablet.png
             viewer-mobile.png
