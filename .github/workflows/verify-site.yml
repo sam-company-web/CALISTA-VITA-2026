@@ -1,4 +1,4 @@
-name: Verify CALISTA VITA viewer result
+name: Verify CALISTA VITA exact hero
 on:
   push:
     branches: [main]
@@ -17,7 +17,7 @@ jobs:
           npm init -y
           npm install --no-save playwright
           npx playwright install --with-deps chromium
-      - name: Run local site and verify viewer result
+      - name: Run local site and verify exact viewer result
         shell: bash
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/calista-server.log 2>&1 &
@@ -26,41 +26,67 @@ jobs:
           sleep 2
           node <<'NODE'
           const { chromium } = require('playwright');
+          const EXPECTED_SHA='dccfd986a947f0c18c969f672e1fe136daf8681be65596ffb5343694ea169bb5';
+          async function inspect(page,label){
+            await page.waitForFunction(() => document.querySelector('#calistaExactHero')?.dataset.heroExact === 'true', null, {timeout:30000});
+            const hero=page.locator('#calistaExactHero').first();
+            const info=await hero.evaluate(img => ({
+              complete:img.complete,
+              naturalWidth:img.naturalWidth,
+              naturalHeight:img.naturalHeight,
+              sha:img.dataset.heroSha256||'',
+              exact:img.dataset.heroExact||'',
+              rect:img.getBoundingClientRect().toJSON()
+            }));
+            if(!info.complete || info.naturalWidth!==1536 || info.naturalHeight!==1024) throw new Error(label+'_HERO_IMAGE_NOT_EXACT '+JSON.stringify(info));
+            if(info.sha!==EXPECTED_SHA || info.exact!=='true') throw new Error(label+'_HERO_CHECKSUM_MISMATCH '+JSON.stringify(info));
+            if(info.rect.width < 300 || info.rect.height < 180) throw new Error(label+'_HERO_NOT_VISIBLE '+JSON.stringify(info.rect));
+            const ratio=info.rect.width/info.rect.height;
+            if(Math.abs(ratio-(1536/1024))>0.02) throw new Error(label+'_HERO_RATIO_CHANGED '+JSON.stringify(info.rect));
+            return info;
+          }
           (async () => {
-            const browser = await chromium.launch({headless:true});
-            const page = await browser.newPage({viewport:{width:1536,height:1024}, deviceScaleFactor:1});
+            const browser=await chromium.launch({headless:true});
+            const page=await browser.newPage({viewport:{width:1536,height:1024},deviceScaleFactor:1});
             const failed=[];
-            page.on('console', m => { if (m.type()==='error') failed.push('console:'+m.text()); });
-            page.on('pageerror', e => failed.push('pageerror:'+e.message));
             const responses=[];
-            page.on('response', r => responses.push({url:r.url(),status:r.status()}));
-            await page.goto('http://127.0.0.1:4173/', {waitUntil:'networkidle'});
-            const hero = page.locator('.hero-media img').first();
-            await hero.waitFor();
-            const info = await hero.evaluate(img => ({complete:img.complete,naturalWidth:img.naturalWidth,naturalHeight:img.naturalHeight,src:img.currentSrc||img.src,rect:img.getBoundingClientRect().toJSON()}));
+            page.on('console',m=>{if(m.type()==='error')failed.push('console:'+m.text());});
+            page.on('pageerror',e=>failed.push('pageerror:'+e.message));
+            page.on('response',r=>responses.push({url:r.url(),status:r.status()}));
+            await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
+            const desktop=await inspect(page,'DESKTOP');
+            const cta=page.locator('.hero-cta-hit').first();
+            const heroRect=await page.locator('.hero').getBoundingClientRect();
+            const ctaRect=await cta.getBoundingClientRect();
+            if(ctaRect.x<heroRect.x || ctaRect.y<heroRect.y || ctaRect.right>heroRect.right || ctaRect.bottom>heroRect.bottom) throw new Error('CTA_OUTSIDE_HERO '+JSON.stringify({heroRect,ctaRect}));
+            await cta.click();
+            await page.waitForTimeout(100);
+            if(await page.evaluate(()=>location.hash)!=='#collections') throw new Error('CTA_DID_NOT_NAVIGATE');
             await page.screenshot({path:'viewer-desktop.png',fullPage:false});
-            const mobile = await browser.newPage({viewport:{width:390,height:844}, deviceScaleFactor:1});
-            await mobile.goto('http://127.0.0.1:4173/', {waitUntil:'networkidle'});
-            const mi = await mobile.locator('.hero-media img').first().evaluate(img => ({complete:img.complete,naturalWidth:img.naturalWidth,naturalHeight:img.naturalHeight,rect:img.getBoundingClientRect().toJSON()}));
-            if (!mi.complete || mi.naturalWidth===0 || mi.rect.width < 300) throw new Error('MOBILE_HERO_NOT_VISIBLE '+JSON.stringify(mi));
+            const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+            const mobileResponses=[];
+            mobile.on('response',r=>mobileResponses.push({url:r.url(),status:r.status()}));
+            mobile.on('console',m=>{if(m.type()==='error')failed.push('mobile-console:'+m.text());});
+            mobile.on('pageerror',e=>failed.push('mobile-pageerror:'+e.message));
+            await mobile.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
+            const mobileInfo=await inspect(mobile,'MOBILE');
+            const mobileCta=mobile.locator('.hero-cta-hit').first();
+            await mobileCta.click();
+            await mobile.waitForTimeout(100);
+            if(await mobile.evaluate(()=>location.hash)!=='#collections') throw new Error('MOBILE_CTA_DID_NOT_NAVIGATE');
             await mobile.screenshot({path:'viewer-mobile.png',fullPage:false});
+            const bad=[...responses,...mobileResponses].filter(x=>x.status>=400);
+            if(bad.length) throw new Error('HTTP_ERRORS '+JSON.stringify(bad.slice(0,20)));
+            if(failed.length) throw new Error('BROWSER_ERRORS '+JSON.stringify(failed));
+            console.log('VIEWER_RESULT',JSON.stringify({desktop,mobile:mobileInfo,expectedSha:EXPECTED_SHA}));
             await mobile.close();
-            if (!info.complete || info.naturalWidth===0) throw new Error('HERO_IMAGE_NOT_VISIBLE '+JSON.stringify(info));
-            if (info.rect.width < 500 || info.rect.height < 300) throw new Error('HERO_IMAGE_NOT_MAIN_VISUAL '+JSON.stringify(info.rect));
-            const bad = responses.filter(x => x.status>=400);
-            if (bad.length) throw new Error('HTTP_ERRORS '+JSON.stringify(bad.slice(0,20)));
-            if (failed.length) throw new Error('BROWSER_ERRORS '+JSON.stringify(failed));
-            const cta = page.locator('.hero-cta-hit').first();
-            if (await cta.count()) { const before = await page.evaluate(() => location.hash); await cta.click(); await page.waitForTimeout(50); if (location.hash !== '#collections') throw new Error('CTA_DID_NOT_NAVIGATE '+location.hash); await page.evaluate(() => location.hash='#top'); }
-            const links = await page.locator('a.hit').evaluateAll(as => as.map(a => ({text:a.textContent.trim(),href:a.getAttribute('href'),box:a.getBoundingClientRect().toJSON()})));
-            console.log('VIEWER_RESULT', JSON.stringify({hero:info,links}));
             await browser.close();
-          })().catch(e => { console.error(e); process.exit(1); });
+          })().catch(e=>{console.error(e);process.exit(1);});
           NODE
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: calista-viewer-desktop
+          name: calista-exact-hero-viewer
           path: |
             viewer-desktop.png
             viewer-mobile.png
