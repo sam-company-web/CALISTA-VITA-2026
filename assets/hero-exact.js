@@ -3,7 +3,7 @@
 var img=document.getElementById('calistaExactHero');
 if(!img)return;
 var chunks=['00','01'];
-var EXPECTED_BYTES=3033821;
+var EXPECTED_BYTES=421251;
 var EXPECTED_WIDTH=2048;
 var EXPECTED_HEIGHT=1355;
 var EXPECTED_SHA='d5c0e3d0d8fa52d68bc4440782c9239c5d647c2d506aceffadde51d5bef07db8';
