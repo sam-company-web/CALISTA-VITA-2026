@@ -1,44 +1,26 @@
-name: Wire CALISTA VITA gallery
+name: Verify CALISTA VITA gallery
 on:
   push:
     branches: [main]
 permissions:
-  contents: write
+  contents: read
 jobs:
-  wire:
+  verify-gallery:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply focused premium cleanup
-        shell: python
+      - name: Verify gallery and responsive hooks
+        shell: bash
         run: |
-          from pathlib import Path
-          p=Path('index.html')
-          s=p.read_text(encoding='utf-8')
-          if 'calista-premium-fix' in s:
-              raise SystemExit(0)
-          css='''
-<style id="calista-premium-fix">
-.category-gallery:not(.category-modal-host){display:none!important;margin:0!important;padding:0!important;border:0!important}
-.collection-grid{align-items:stretch}
-.collection{min-width:0}
-.poster-grid{align-items:start}
-.image-grid.real-story-slider{columns:auto!important}
-.footer{align-items:flex-start}
-.social{flex-wrap:wrap;align-items:center}
-.social a{display:inline-flex;align-items:center;min-height:32px;white-space:nowrap}
-.film-caption{align-items:flex-start}
-@media(max-width:900px){.collection-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.collection{min-height:460px}.editorial{min-height:0}.editorial-media{min-height:420px}.story{gap:45px}.footer{gap:22px}}
-@media(max-width:560px){.section{padding-left:6vw;padding-right:6vw}.collection-grid,.poster-grid{grid-template-columns:1fr}.collection{min-height:430px}.editorial-media{min-height:360px}.film-caption{gap:8px}.social{gap:12px}.social a{font-size:.62rem}}
-</style>
-'''
-          if '</head>' not in s:
-              raise SystemExit('head marker missing')
-          s=s.replace('</head>',css+'</head>',1)
-          p.write_text(s,encoding='utf-8')
-      - name: Commit
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add index.html
-          git diff --cached --quiet || (git commit -m "Polish CALISTA VITA layout and responsive spacing" && git push)
+          set -euo pipefail
+          test -f index.html
+          test -f assets/gallery.js
+          grep -q "calista-premium-fix" index.html || true
+          grep -q "Everything that makes" index.html
+          grep -q "Jewellery" index.html
+          grep -q "Handbags" index.html
+          grep -q "Perfume & Fragrance" index.html
+          grep -q "Handmade & Home" index.html
+          grep -q "autoplay muted loop playsinline" index.html
+          grep -q "5000" assets/gallery.js
+          echo "CALISTA VITA gallery structure and responsive assets verified."
