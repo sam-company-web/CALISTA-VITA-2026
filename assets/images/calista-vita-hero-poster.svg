@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbf4e7"/><stop offset=".55" stop-color="#f4e5cc"/><stop offset="1" stop-color="#efe0c5"/></linearGradient>
+  <radialGradient id="glow"><stop offset="0" stop-color="#fffdf8" stop-opacity=".95"/><stop offset="1" stop-color="#ead6b5" stop-opacity=".05"/></radialGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8c5a20"/><stop offset=".45" stop-color="#e1b86e"/><stop offset="1" stop-color="#8a561d"/></linearGradient>
+  <filter id="shadow"><feDropShadow dx="0" dy="14" stdDeviation="18" flood-opacity=".14"/></filter>
+</defs>
+<rect width="1600" height="1000" fill="url(#bg)"/>
+<circle cx="800" cy="470" r="430" fill="url(#glow)"/>
+<path d="M120 120 Q800 30 1480 120 M120 880 Q800 970 1480 880" fill="none" stroke="#c8a56c" stroke-width="2" opacity=".45"/>
+<path d="M145 145 Q800 70 1455 145 L1455 855 Q800 930 145 855 Z" fill="none" stroke="#b88a48" stroke-width="2" opacity=".5"/>
+<!-- crown -->
+<g transform="translate(800 118)" fill="url(#gold)" stroke="#7a4c18" stroke-width="3">
+  <path d="M-92 20 L-122 -58 L-58 -12 L0 -86 L58 -12 L122 -58 L92 20 Z"/>
+  <path d="M-91 20 Q0 48 91 20 L76 66 Q0 91 -76 66 Z"/>
+  <circle cx="-58" cy="-12" r="7" fill="#f8e6b9"/><circle cx="0" cy="-36" r="8" fill="#f8e6b9"/><circle cx="58" cy="-12" r="7" fill="#f8e6b9"/>
+</g>
+<!-- CV monogram -->
+<g transform="translate(800 360)" fill="none" stroke="url(#gold)" stroke-linecap="round">
+  <path d="M-180 55 C-245 -35 -170 -125 -45 -105 C20 -95 42 -65 55 -34" stroke-width="20"/>
+  <path d="M-155 10 C-105 -40 -28 -40 10 10 C48 60 95 84 153 50" stroke-width="15"/>
+  <path d="M5 -75 L-28 118" stroke-width="18"/>
+  <path d="M52 -75 L6 118" stroke-width="18"/>
+  <path d="M85 -62 C125 -108 164 -108 188 -132 C176 -76 157 -42 110 -16" stroke-width="12"/>
+  <path d="M104 -22 C148 -44 178 -35 211 -55 C192 -12 159 10 116 10" stroke-width="12"/>
+</g>
+<g fill="#7a4c22" text-anchor="middle">
+  <text x="800" y="560" font-family="Georgia,serif" font-size="86" letter-spacing="15">CALISTA VITA</text>
+  <text x="800" y="635" font-family="cursive" font-style="italic" font-size="48">Nature’s Elegance</text>
+  <text x="800" y="700" font-family="Arial,sans-serif" font-size="23" letter-spacing="10">JEWELLERY   •   HANDBAGS   •   CANDLES   •   PERFUME</text>
+  <text x="800" y="752" font-family="Arial,sans-serif" font-size="19" letter-spacing="8">NATURALLY MADE</text>
+  <text x="800" y="812" font-family="cursive" font-style="italic" font-size="31">Pure   •   Natural   •   Timeless</text>
+</g>
+<!-- candle -->
+<g transform="translate(245 735)" filter="url(#shadow)">
+ <rect x="0" y="55" width="170" height="165" rx="20" fill="#fbf7ed" stroke="#b88a48" stroke-width="3"/>
+ <ellipse cx="85" cy="55" rx="85" ry="22" fill="#fffaf0" stroke="#b88a48" stroke-width="3"/>
+ <path d="M85 48 C65 25 92 5 86 -20 C115 12 104 31 92 48Z" fill="#c18b43"/>
+ <text x="85" y="130" text-anchor="middle" font-family="Georgia,serif" font-size="22" fill="#7a4c22">CV</text>
+ <text x="85" y="158" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" letter-spacing="2" fill="#7a4c22">CALISTA VITA</text>
+</g>
+<!-- perfume -->
+<g transform="translate(1200 690)" filter="url(#shadow)">
+ <rect x="15" y="70" width="150" height="210" rx="18" fill="#f9f3e8" stroke="#b88a48" stroke-width="3"/>
+ <rect x="48" y="32" width="84" height="42" rx="6" fill="#d8b779" stroke="#8a5a22" stroke-width="3"/>
+ <rect x="73" y="8" width="34" height="27" rx="4" fill="#c59650"/>
+ <text x="90" y="155" text-anchor="middle" font-family="Georgia,serif" font-size="20" fill="#7a4c22">CALISTA VITA</text>
+ <text x="90" y="183" text-anchor="middle" font-family="cursive" font-size="17" fill="#8d6a3e">Nature’s Elegance</text>
+</g>
+<!-- botanical accents -->
+<g fill="none" stroke="#87936f" stroke-width="9" opacity=".7">
+ <path d="M80 900 Q160 770 210 700"/><path d="M1520 900 Q1440 770 1390 700"/>
+</g>
+<g fill="#9ba984" opacity=".65">
+ <ellipse cx="125" cy="820" rx="55" ry="18" transform="rotate(-38 125 820)"/><ellipse cx="165" cy="760" rx="50" ry="16" transform="rotate(20 165 760)"/>
+ <ellipse cx="1475" cy="820" rx="55" ry="18" transform="rotate(38 1475 820)"/><ellipse cx="1435" cy="760" rx="50" ry="16" transform="rotate(-20 1435 760)"/>
+</g>
+</svg>
