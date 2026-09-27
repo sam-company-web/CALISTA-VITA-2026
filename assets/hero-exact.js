@@ -11,7 +11,7 @@ img.dataset.heroExact='loading';
 function sha256(bytes){return crypto.subtle.digest('SHA-256',bytes).then(function(hash){return Array.from(new Uint8Array(hash)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');});}
 Promise.all(chunks.map(function(n){return fetch('assets/hero-current/'+n+'.txt',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('Hero chunk '+n+' HTTP '+r.status);return r.text();});}))
 .then(function(parts){
-  var raw=atob(parts.join('').replace(/\\s+/g,''));
+  var raw=atob(parts.join('').replace(/\s+/g,''));
   var bytes=new Uint8Array(raw.length);
   for(var i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
   if(bytes.length!==EXPECTED_BYTES)throw new Error('Exact hero byte length mismatch: '+bytes.length);
@@ -24,7 +24,7 @@ Promise.all(chunks.map(function(n){return fetch('assets/hero-current/'+n+'.txt',
     img.dataset.heroExact='true';
     img.dataset.heroBytes=String(bytes.length);
     img.dataset.heroSha256=EXPECTED_SHA;
-    img.style.visibility='visible';
+    img.style.setProperty('visibility','visible','important');
   },{once:true});
   img.addEventListener('error',function(){throw new Error('Exact hero JPEG decode failed');},{once:true});
   img.src=url;
