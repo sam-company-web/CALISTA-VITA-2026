@@ -39,8 +39,8 @@ jobs:
               heroBytes:img.dataset.heroBytes||'',
               rect:img.getBoundingClientRect().toJSON()
             }));
-            if(!info.complete || info.naturalWidth!==1536 || info.naturalHeight!==1024) throw new Error(label+'_HERO_IMAGE_NOT_EXACT '+JSON.stringify(info));
-            if(info.exact!=='true' || Number(info.heroBytes)!==3033821) throw new Error(label+'_HERO_BYTE_CHECK_FAILED '+JSON.stringify(info));
+            if(!info.complete || info.naturalWidth!==2048 || info.naturalHeight!==1355) throw new Error(label+'_HERO_IMAGE_NOT_EXACT '+JSON.stringify(info));
+            if(info.exact!=='true' || Number(info.heroBytes)!==421251) throw new Error(label+'_HERO_BYTE_CHECK_FAILED '+JSON.stringify(info));
             if(info.rect.width < 300 || info.rect.height < 180) throw new Error(label+'_HERO_NOT_VISIBLE '+JSON.stringify(info.rect));
             const ratio=info.rect.width/info.rect.height;
             if(Math.abs(ratio-(2048/1355))>0.02) throw new Error(label+'_HERO_RATIO_CHANGED '+JSON.stringify(info.rect));
