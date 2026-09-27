@@ -1,0 +1,54 @@
+name: Apply CALISTA VITA hero poster fix
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix-hero:
+    if: "!contains(github.event.head_commit.message, 'Apply CALISTA VITA hero poster fix')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update hero poster and light presentation
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          old_poster = 'assets/posters/03-fragrance.jpg'
+          new_poster = 'assets/images/calista-vita-brand-lockup.jpg'
+          s = s.replace(
+              '<div class="hero-media"><img src="assets/posters/03-fragrance.jpg" alt="" aria-hidden="true"></div>',
+              '<div class="hero-media"><img src="assets/images/calista-vita-brand-lockup.jpg" alt="CALISTA VITA — Nature’s Elegance" aria-hidden="true"></div>'
+          )
+
+          old_css = ".hero{min-height:100vh;position:relative;display:grid;align-items:end;padding:12vh 7vw 8vh;color:#fff;background:#273229;overflow:hidden}.hero-media{position:absolute;inset:0;overflow:hidden}.hero-media img{width:100%;height:100%;object-fit:cover;object-position:center;filter:saturate(.82) contrast(.98);opacity:.82}.hero-media:after{content:\"\";position:absolute;inset:0;background:linear-gradient(90deg,rgba(25,34,28,.9),rgba(25,34,28,.2) 62%,rgba(25,34,28,.48)),linear-gradient(0deg,rgba(20,26,22,.75),transparent 50%)}.hero-content{position:relative;z-index:2;max-width:900px}.hero-signature{display:grid;justify-items:start;gap:2px;margin-bottom:28px}.hero-monogram{font-family:var(--serif);font-size:clamp(2.4rem,5vw,4.2rem);line-height:.8;color:#e5d3b0;letter-spacing:-.08em;text-shadow:0 8px 25px rgba(0,0,0,.3)}.hero-signature-name{font-family:var(--serif);font-size:clamp(1.25rem,2.2vw,2rem);letter-spacing:.18em;color:#fff}.hero-signature-tag{font-family:var(--serif);font-style:italic;font-size:.95rem;color:#e5d3b0}.kicker,.eyebrow{text-transform:uppercase;letter-spacing:.19em;font-size:.68rem}.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(4.2rem,10vw,9rem);line-height:.8;margin:18px 0 28px}.hero h1 em{font-style:italic;color:#e5d3b0}.hero p{max-width:730px;font-size:1.08rem}.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:25px}.pill{border:1px solid rgba(255,255,255,.48);padding:8px 12px;font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(255,255,255,.04)}"
+          new_css = ".hero{min-height:100vh;position:relative;display:grid;align-items:end;padding:12vh 7vw 8vh;color:var(--ink);background:var(--cream);overflow:hidden}.hero-media{position:absolute;inset:0;overflow:hidden;background:var(--cream)}.hero-media img{width:100%;height:100%;object-fit:cover;object-position:center;filter:saturate(.82) contrast(.96) brightness(1.02);opacity:.96}.hero-media:after{content:\"\";position:absolute;inset:0;background:linear-gradient(90deg,rgba(251,248,241,.78),rgba(251,248,241,.18) 58%,rgba(251,248,241,.28)),linear-gradient(0deg,rgba(251,248,241,.22),rgba(251,248,241,.04) 58%,rgba(251,248,241,.12))}.hero-content{position:relative;z-index:2;max-width:760px;padding:30px 34px;background:rgba(251,248,241,.76);border:1px solid rgba(38,48,42,.14);box-shadow:0 24px 70px rgba(37,45,39,.16);backdrop-filter:blur(3px)}.hero-signature{display:grid;justify-items:start;gap:2px;margin-bottom:28px}.hero-monogram{font-family:var(--serif);font-size:clamp(2.4rem,5vw,4.2rem);line-height:.8;color:#8d795b;letter-spacing:-.08em;text-shadow:none}.hero-signature-name{font-family:var(--serif);font-size:clamp(1.25rem,2.2vw,2rem);letter-spacing:.18em;color:var(--ink)}.hero-signature-tag{font-family:var(--serif);font-style:italic;font-size:.95rem;color:#8d795b}.kicker,.eyebrow{text-transform:uppercase;letter-spacing:.19em;font-size:.68rem}.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(4.2rem,10vw,9rem);line-height:.8;margin:18px 0 28px}.hero h1 em{font-style:italic;color:#8d795b}.hero p{max-width:730px;font-size:1.08rem}.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:25px}.pill{border:1px solid rgba(38,48,42,.28);padding:8px 12px;font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;background:rgba(255,255,255,.42);color:var(--ink)}"
+          if old_css not in s:
+              raise SystemExit('Expected hero CSS block was not found; no changes made.')
+          s = s.replace(old_css, new_css, 1)
+
+          mobile_old = '.hero{padding:120px 6vw 70px}'
+          mobile_new = '.hero{padding:120px 6vw 70px}.hero-content{padding:24px 22px;max-width:100%}'
+          s = s.replace(mobile_old, mobile_new, 1)
+
+          p.write_text(s, encoding='utf-8')
+
+      - name: Commit hero correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Apply CALISTA VITA hero poster fix"
+          git push origin main
