@@ -39,11 +39,19 @@ jobs:
             await hero.waitFor();
             const info = await hero.evaluate(img => ({complete:img.complete,naturalWidth:img.naturalWidth,naturalHeight:img.naturalHeight,src:img.currentSrc||img.src,rect:img.getBoundingClientRect().toJSON()}));
             await page.screenshot({path:'viewer-desktop.png',fullPage:false});
+            const mobile = await browser.newPage({viewport:{width:390,height:844}, deviceScaleFactor:1});
+            await mobile.goto('http://127.0.0.1:4173/', {waitUntil:'networkidle'});
+            const mi = await mobile.locator('.hero-media img').first().evaluate(img => ({complete:img.complete,naturalWidth:img.naturalWidth,naturalHeight:img.naturalHeight,rect:img.getBoundingClientRect().toJSON()}));
+            if (!mi.complete || mi.naturalWidth===0 || mi.rect.width < 300) throw new Error('MOBILE_HERO_NOT_VISIBLE '+JSON.stringify(mi));
+            await mobile.screenshot({path:'viewer-mobile.png',fullPage:false});
+            await mobile.close();
             if (!info.complete || info.naturalWidth===0) throw new Error('HERO_IMAGE_NOT_VISIBLE '+JSON.stringify(info));
             if (info.rect.width < 500 || info.rect.height < 300) throw new Error('HERO_IMAGE_NOT_MAIN_VISUAL '+JSON.stringify(info.rect));
             const bad = responses.filter(x => x.status>=400);
             if (bad.length) throw new Error('HTTP_ERRORS '+JSON.stringify(bad.slice(0,20)));
             if (failed.length) throw new Error('BROWSER_ERRORS '+JSON.stringify(failed));
+            const cta = page.locator('.hero-cta-hit').first();
+            if (await cta.count()) { const before = await page.evaluate(() => location.hash); await cta.click(); await page.waitForTimeout(50); if (location.hash !== '#collections') throw new Error('CTA_DID_NOT_NAVIGATE '+location.hash); await page.evaluate(() => location.hash='#top'); }
             const links = await page.locator('a.hit').evaluateAll(as => as.map(a => ({text:a.textContent.trim(),href:a.getAttribute('href'),box:a.getBoundingClientRect().toJSON()})));
             console.log('VIEWER_RESULT', JSON.stringify({hero:info,links}));
             await browser.close();
@@ -53,4 +61,6 @@ jobs:
         if: always()
         with:
           name: calista-viewer-desktop
-          path: viewer-desktop.png
+          path: |
+            viewer-desktop.png
+            viewer-mobile.png
