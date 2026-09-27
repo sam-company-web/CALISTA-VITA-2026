@@ -56,8 +56,8 @@ jobs:
             await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
             const desktop=await inspect(page,'DESKTOP');
             const cta=page.locator('.hero-cta-hit').first();
-            const heroRect=await page.locator('.hero').getBoundingClientRect();
-            const ctaRect=await cta.getBoundingClientRect();
+            const heroRect=await page.locator('.hero').evaluate(el=>el.getBoundingClientRect().toJSON());
+            const ctaRect=await cta.evaluate(el=>el.getBoundingClientRect().toJSON());
             if(ctaRect.x<heroRect.x || ctaRect.y<heroRect.y || ctaRect.right>heroRect.right || ctaRect.bottom>heroRect.bottom) throw new Error('CTA_OUTSIDE_HERO '+JSON.stringify({heroRect,ctaRect}));
             await cta.click();
             await page.waitForTimeout(100);
