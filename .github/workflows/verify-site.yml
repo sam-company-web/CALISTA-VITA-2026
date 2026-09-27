@@ -36,10 +36,11 @@ jobs:
               naturalHeight:img.naturalHeight,
               sha:img.dataset.heroSha256||'',
               exact:img.dataset.heroExact||'',
+              heroBytes:img.dataset.heroBytes||'',
               rect:img.getBoundingClientRect().toJSON()
             }));
             if(!info.complete || info.naturalWidth!==1536 || info.naturalHeight!==1024) throw new Error(label+'_HERO_IMAGE_NOT_EXACT '+JSON.stringify(info));
-            if(info.sha!==EXPECTED_SHA || info.exact!=='true') throw new Error(label+'_HERO_CHECKSUM_MISMATCH '+JSON.stringify(info));
+            if(info.exact!=='true' || Number(info.heroBytes)!==2887863) throw new Error(label+'_HERO_BYTE_CHECK_FAILED '+JSON.stringify(info));
             if(info.rect.width < 300 || info.rect.height < 180) throw new Error(label+'_HERO_NOT_VISIBLE '+JSON.stringify(info.rect));
             const ratio=info.rect.width/info.rect.height;
             if(Math.abs(ratio-(1536/1024))>0.02) throw new Error(label+'_HERO_RATIO_CHANGED '+JSON.stringify(info.rect));
@@ -55,6 +56,9 @@ jobs:
             page.on('response',r=>responses.push({url:r.url(),status:r.status()}));
             await page.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
             const desktop=await inspect(page,'DESKTOP');
+            const desktopB64=await page.evaluate(async()=>{const r=await fetch(document.querySelector('#calistaExactHero').src);const b=new Uint8Array(await r.arrayBuffer());let s='';for(let i=0;i<b.length;i+=32768)s+=String.fromCharCode(...b.subarray(i,i+32768));return btoa(s);});
+            const desktopHash=require('crypto').createHash('sha256').update(Buffer.from(desktopB64,'base64')).digest('hex');
+            if(desktopHash!==EXPECTED_SHA) throw new Error('DESKTOP_EXACT_SHA_MISMATCH '+desktopHash);
             const cta=page.locator('.hero-cta-hit').first();
             const heroRect=await page.locator('.hero').evaluate(el=>el.getBoundingClientRect().toJSON());
             const ctaRect=await cta.evaluate(el=>el.getBoundingClientRect().toJSON());
@@ -70,6 +74,9 @@ jobs:
             mobile.on('pageerror',e=>failed.push('mobile-pageerror:'+e.message));
             await mobile.goto('http://127.0.0.1:4173/',{waitUntil:'networkidle'});
             const mobileInfo=await inspect(mobile,'MOBILE');
+            const mobileB64=await mobile.evaluate(async()=>{const r=await fetch(document.querySelector('#calistaExactHero').src);const b=new Uint8Array(await r.arrayBuffer());let s='';for(let i=0;i<b.length;i+=32768)s+=String.fromCharCode(...b.subarray(i,i+32768));return btoa(s);});
+            const mobileHash=require('crypto').createHash('sha256').update(Buffer.from(mobileB64,'base64')).digest('hex');
+            if(mobileHash!==EXPECTED_SHA) throw new Error('MOBILE_EXACT_SHA_MISMATCH '+mobileHash);
             const mobileCta=mobile.locator('.hero-cta-hit').first();
             await mobileCta.click();
             await mobile.waitForTimeout(100);
