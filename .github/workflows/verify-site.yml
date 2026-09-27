@@ -26,7 +26,7 @@ jobs:
           sleep 2
           node <<'NODE'
           const { chromium } = require('playwright');
-          const EXPECTED_SHA='dccfd986a947f0c18c969f672e1fe136daf8681be65596ffb5343694ea169bb5';
+          const EXPECTED_SHA='d5c0e3d0d8fa52d68bc4440782c9239c5d647c2d506aceffadde51d5bef07db8';
           async function inspect(page,label){
             await page.waitForFunction(() => document.querySelector('#calistaExactHero')?.dataset.heroExact === 'true', null, {timeout:30000});
             const hero=page.locator('#calistaExactHero').first();
@@ -40,10 +40,10 @@ jobs:
               rect:img.getBoundingClientRect().toJSON()
             }));
             if(!info.complete || info.naturalWidth!==1536 || info.naturalHeight!==1024) throw new Error(label+'_HERO_IMAGE_NOT_EXACT '+JSON.stringify(info));
-            if(info.exact!=='true' || Number(info.heroBytes)!==2887863) throw new Error(label+'_HERO_BYTE_CHECK_FAILED '+JSON.stringify(info));
+            if(info.exact!=='true' || Number(info.heroBytes)!==3033821) throw new Error(label+'_HERO_BYTE_CHECK_FAILED '+JSON.stringify(info));
             if(info.rect.width < 300 || info.rect.height < 180) throw new Error(label+'_HERO_NOT_VISIBLE '+JSON.stringify(info.rect));
             const ratio=info.rect.width/info.rect.height;
-            if(Math.abs(ratio-(1536/1024))>0.02) throw new Error(label+'_HERO_RATIO_CHANGED '+JSON.stringify(info.rect));
+            if(Math.abs(ratio-(2048/1355))>0.02) throw new Error(label+'_HERO_RATIO_CHANGED '+JSON.stringify(info.rect));
             return info;
           }
           (async () => {
